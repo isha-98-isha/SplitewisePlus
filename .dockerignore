@@ -1,0 +1,10 @@
+# Ignore build outputs
+**/target
+
+# Node artifacts
+**/node_modules
+
+# Local config
+.vscode
+.idea
+*.log
