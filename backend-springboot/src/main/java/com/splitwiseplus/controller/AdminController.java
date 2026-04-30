@@ -4,7 +4,7 @@ import com.splitwiseplus.model.User;
 import com.splitwiseplus.model.Expense;
 import com.splitwiseplus.repository.UserRepository;
 import com.splitwiseplus.repository.ExpenseRepository;
-import com.splitwiseplus.repository.SettlementRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
@@ -22,9 +22,6 @@ public class AdminController {
 
     @Autowired
     private ExpenseRepository expenseRepository;
-
-    @Autowired
-    private SettlementRepository settlementRepository;
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AdminController.class);
 
@@ -57,6 +54,7 @@ public class AdminController {
         }).collect(Collectors.toList());
     }
 
+    @SuppressWarnings("null")
     @DeleteMapping("/users/{id}")
     public Map<String, String> deleteUser(@PathVariable String id) {
         logger.info("Deleting user: {}", id);

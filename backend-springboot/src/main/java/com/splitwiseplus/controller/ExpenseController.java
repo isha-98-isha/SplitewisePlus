@@ -16,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/expenses")
 @CrossOrigin(origins = "*") // Allow React to connect
+@SuppressWarnings("null")
 public class ExpenseController {
 
     @Autowired

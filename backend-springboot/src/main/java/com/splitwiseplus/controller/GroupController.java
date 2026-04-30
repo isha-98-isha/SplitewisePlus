@@ -11,6 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/groups")
 @CrossOrigin(origins = "*")
+@SuppressWarnings("null")
 public class GroupController {
     @Autowired
     private GroupRepository groupRepository;

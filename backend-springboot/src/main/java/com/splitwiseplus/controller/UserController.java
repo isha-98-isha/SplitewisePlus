@@ -71,6 +71,7 @@ public class UserController {
         return org.springframework.http.ResponseEntity.ok(java.util.Map.of("message", "Password reset successful"));
     }
 
+    @SuppressWarnings("null")
     @GetMapping("/{id}")
     public User getUserById(@PathVariable String id) {
         return userRepository.findById(id).orElse(null);
