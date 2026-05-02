@@ -10,6 +10,7 @@ function Login() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [showSplash, setShowSplash] = useState(false)
   const navigate = useNavigate()
 
   const handleLogin = async (e) => {
@@ -25,16 +26,41 @@ function Login() {
       const data = await res.json()
       if (res.ok) {
         localStorage.setItem("user", JSON.stringify(data))
-        window.dispatchEvent(new Event("authChanged"))
-        navigate("/")
+        setShowSplash(true)
+        setTimeout(() => {
+          window.dispatchEvent(new Event("authChanged"))
+          navigate("/")
+        }, 2500)
       } else {
         setError(data.message || "Login failed")
+        setLoading(false)
       }
     } catch (err) {
       setError("Server error")
-    } finally {
       setLoading(false)
     }
+  }
+
+  if (showSplash) {
+    return (
+      <div className="fixed inset-0 bg-[#FCF9F6] z-[100] flex flex-col items-center justify-center animate-in fade-in duration-500">
+        <div className="flex flex-col items-center gap-6">
+          <div className="flex items-center gap-4 animate-in slide-in-from-bottom-8 fade-in duration-1000">
+            <div className="w-16 h-16 rounded-2xl bg-amber-800 flex items-center justify-center text-white logo-dance shadow-xl shadow-amber-900/30">
+              <Wallet size={32} />
+            </div>
+            <span className="text-5xl font-extrabold text-stone-900 tracking-tight">
+              SplitWise<span className="text-amber-700">+</span>
+            </span>
+          </div>
+          <div className="flex gap-1.5 mt-4">
+            <div className="w-2 h-2 rounded-full bg-amber-800 animate-bounce" style={{ animationDelay: "0ms" }}></div>
+            <div className="w-2 h-2 rounded-full bg-amber-800 animate-bounce" style={{ animationDelay: "150ms" }}></div>
+            <div className="w-2 h-2 rounded-full bg-amber-800 animate-bounce" style={{ animationDelay: "300ms" }}></div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

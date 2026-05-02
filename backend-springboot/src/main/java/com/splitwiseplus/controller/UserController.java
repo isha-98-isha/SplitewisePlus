@@ -63,11 +63,41 @@ public class UserController {
 
     @PostMapping("/forgot-password")
     public org.springframework.http.ResponseEntity<?> forgotPassword(@RequestBody java.util.Map<String, String> request) {
+        String email = request.get("email");
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user != null) {
+            String token = java.util.UUID.randomUUID().toString();
+            user.setResetPasswordToken(token);
+            user.setResetPasswordExpire(new java.util.Date(System.currentTimeMillis() + 3600000)); // 1 hour
+            userRepository.save(user);
+            
+            java.util.Map<String, String> response = new java.util.HashMap<>();
+            response.put("message", "Reset link generated");
+            response.put("resetToken", token);
+            return org.springframework.http.ResponseEntity.ok(response);
+        }
         return org.springframework.http.ResponseEntity.ok(java.util.Map.of("message", "Reset link sent if email exists"));
     }
 
     @PostMapping("/reset-password")
     public org.springframework.http.ResponseEntity<?> resetPassword(@RequestBody java.util.Map<String, String> request) {
+        String token = request.get("token");
+        String password = request.get("password");
+        
+        User user = userRepository.findByResetPasswordToken(token).orElse(null);
+        if (user == null) {
+            return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("message", "Invalid token"));
+        }
+        
+        if (user.getResetPasswordExpire() != null && user.getResetPasswordExpire().before(new java.util.Date())) {
+            return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("message", "Token expired"));
+        }
+        
+        user.setPassword(encoder.encode(password));
+        user.setResetPasswordToken(null);
+        user.setResetPasswordExpire(null);
+        userRepository.save(user);
+        
         return org.springframework.http.ResponseEntity.ok(java.util.Map.of("message", "Password reset successful"));
     }
 

@@ -80,6 +80,11 @@ public class ExpenseController {
         expenseRepository.deleteById(id);
     }
 
+    @GetMapping("/detail/{id}")
+    public Expense getExpenseById(@PathVariable String id) {
+        return expenseRepository.findById(id).orElse(null);
+    }
+
     @PutMapping("/{id}")
     public Expense updateExpense(@PathVariable String id, @RequestBody Expense expense) {
         expense.setId(id);

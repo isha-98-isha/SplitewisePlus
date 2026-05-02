@@ -11,6 +11,7 @@ function EditExpensePage() {
     const [category, setCategory] = useState("Food")
     const [date, setDate] = useState("")
     const [notes, setNotes] = useState("")
+    const [receipt, setReceipt] = useState(null)
     const [splitWith, setSplitWith] = useState([])
     const [newPerson, setNewPerson] = useState("")
     const [newEmail, setNewEmail] = useState("")
@@ -35,6 +36,7 @@ function EditExpensePage() {
                     setAmount(data.amount?.toString() || "")
                     setCategory(data.category || "Food")
                     setNotes(data.notes || "")
+                    setReceipt(data.receipt || null)
 
                     // Format date for <input type="date">
                     if (data.createdAt) {
@@ -79,6 +81,17 @@ function EditExpensePage() {
         setSplitWith(splitWith.filter(p => p.name !== name))
     }
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setReceipt(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         const numericAmount = parseFloat(amount)
@@ -111,7 +124,8 @@ function EditExpensePage() {
                     splitWith: formattedSplits,
                     totalSplit: divisions,
                     createdAt: new Date(date),
-                    notes
+                    notes,
+                    receipt
                 })
             })
             if (res.ok) {
@@ -224,6 +238,30 @@ function EditExpensePage() {
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
                                 />
+                            </div>
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <label className={labelClass}>Receipt / Proof Photo</label>
+                            <div className="relative group">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                    className="w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-800 hover:file:bg-amber-100 transition-all cursor-pointer bg-stone-50 p-2 rounded-xl border border-stone-100"
+                                />
+                                {receipt && (
+                                    <div className="mt-3 relative inline-block">
+                                        <img src={receipt} alt="Receipt preview" className="h-24 object-contain rounded-lg border border-stone-200 shadow-sm" />
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setReceipt(null)} 
+                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors"
+                                        >
+                                            <X size={12} />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

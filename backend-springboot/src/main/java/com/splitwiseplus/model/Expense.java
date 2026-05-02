@@ -30,6 +30,7 @@ public class Expense {
     
     private Date createdAt = new Date();
     private String notes = "";
+    private String receipt; // Base64 image data for proof
     
     private List<SplitMember> splitWith;
     private Integer totalSplit = 1;
