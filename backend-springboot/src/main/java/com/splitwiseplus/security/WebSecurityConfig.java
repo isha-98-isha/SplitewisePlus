@@ -20,7 +20,25 @@ public class WebSecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        // Handles both $2a$ (Spring BCrypt) and $2b$ (Node.js bcryptjs) hash formats
+        return new org.springframework.security.crypto.password.PasswordEncoder() {
+            private final BCryptPasswordEncoder delegate = new BCryptPasswordEncoder();
+
+            @Override
+            public String encode(CharSequence rawPassword) {
+                return delegate.encode(rawPassword);
+            }
+
+            @Override
+            public boolean matches(CharSequence rawPassword, String encodedPassword) {
+                if (encodedPassword == null) return false;
+                // Normalize $2b$ prefix (Node.js bcryptjs) to $2a$ (Spring BCrypt)
+                String normalized = encodedPassword.startsWith("$2b$")
+                        ? "$2a$" + encodedPassword.substring(4)
+                        : encodedPassword;
+                return delegate.matches(rawPassword, normalized);
+            }
+        };
     }
 
     @Bean
