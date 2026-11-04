@@ -1,0 +1,25 @@
+
+//run all modules together//
+npx playwright test --headed
+run only one module//
+npx playwright test e2e/01-auth.spec.js
+npx playwright test e2e/02-dashboard.spec.js
+npx playwright test e2e/03-expenses.spec.js
+npx playwright test e2e/04-settlements.spec.js
+
+//only run one module with headed mode//
+npx playwright test e2e/04-settlements.spec.js --headed
+
+
+//run all modules without headed mode//
+npx playwright test
+
+//run all modules with UI mode//
+npx playwright --ui test
+
+//show report//
+npx playwright show-report
+
+
+//A Playwright Inspector window that generates clean JavaScript automation code in real-time for every click, scroll, and keystroke you make!//
+npx playwright codegen http://localhost:5173

@@ -6,3 +6,5 @@ target/
 .idea/
 *.class
 *.jar
+frontend/playwright-report/
+frontend/test-results/

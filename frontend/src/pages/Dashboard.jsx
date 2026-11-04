@@ -26,7 +26,7 @@ function Dashboard() {
       try {
         const [expRes, groupRes, setRes] = await Promise.all([
           fetch(`${API_URL}/expenses/${userData._id}`),
-          fetch(`${API_URL}/groups/user/${userData._id}`),
+          fetch(`${API_URL}/groups/${userData._id}`),
           fetch(`${API_URL}/expenses/settle/${userData._id}`)
         ])
         const expData = await expRes.json()
