@@ -9,6 +9,7 @@ import com.splitwiseplus.repository.UserRepository;
 import com.splitwiseplus.repository.NotificationRepository;
 import com.splitwiseplus.repository.SettlementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.bson.types.ObjectId;
 import java.util.List;
@@ -30,6 +31,9 @@ public class ExpenseController {
 
     @Autowired
     private SettlementRepository settlementRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/add")
     public Expense createExpense(@RequestBody Expense expense) {
@@ -56,7 +60,14 @@ public class ExpenseController {
                         notification.setMessage(String.format("%s added a new expense: \"%s\". You owe ₹%.2f.", 
                             payerName, savedExpense.getTitle(), item.getAmount()));
                         notification.setExpenseId(new ObjectId(savedExpense.getId()));
-                        notificationRepository.save(notification);
+                        Notification savedNotification = notificationRepository.save(notification);
+
+                        // Broadcast in real-time over WebSocket!
+                        try {
+                            messagingTemplate.convertAndSend("/topic/notifications/" + targetUser.getId(), savedNotification);
+                        } catch (Exception ex) {
+                            System.err.println("WebSocket broadcast error: " + ex.getMessage());
+                        }
                     }
                 });
             }
@@ -119,11 +130,18 @@ public class ExpenseController {
                 notification.setType("expense_settled");
                 notification.setMessage(String.format("%s marked an expense as settled: \"%s\" (₹%.2f).", 
                     settlerName, expense.getTitle(), savedSettlement.getAmount()));
-                notification.setExpenseId(expense.getUserId()); // This should be expense.getId() converted to ObjectId
-                // Wait, in Node it was expense._id
                 notification.setExpenseId(new ObjectId(expense.getId()));
                 
-                notificationRepository.save(notification);
+                Notification savedNotification = notificationRepository.save(notification);
+
+                // Broadcast in real-time over WebSocket!
+                try {
+                    if (expense.getUserId() != null) {
+                        messagingTemplate.convertAndSend("/topic/notifications/" + expense.getUserId().toString(), savedNotification);
+                    }
+                } catch (Exception ex) {
+                    System.err.println("WebSocket broadcast error: " + ex.getMessage());
+                }
             });
         }
 

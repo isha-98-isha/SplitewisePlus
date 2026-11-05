@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react"
-import { Bell, CheckCircle2, Receipt, Trash2, X } from "lucide-react"
-import { API_URL } from "../config"
+import { Bell, CheckCircle2, Receipt, Trash2 } from "lucide-react"
+import { API_URL, WS_URL } from "../config"
 import { useNavigate } from "react-router-dom"
+import { Client } from "@stomp/stompjs"
 
 function NotificationBell() {
     const [notifications, setNotifications] = useState([])
@@ -29,10 +30,46 @@ function NotificationBell() {
         }
     }
 
+    // 1. Initial fetch on mount
     useEffect(() => {
         fetchNotifications()
-        const interval = setInterval(fetchNotifications, 30000) // Poll every 30 seconds
-        return () => clearInterval(interval)
+    }, [userData?._id])
+
+    // 2. Real-time native WebSocket connection via STOMP
+    useEffect(() => {
+        if (!userData?._id) return
+
+        let stompClient = null
+
+        try {
+            stompClient = new Client({
+                brokerURL: WS_URL,
+                reconnectDelay: 5000,
+                onConnect: () => {
+                    stompClient.subscribe(`/topic/notifications/${userData._id}`, (message) => {
+                        try {
+                            const newNotif = JSON.parse(message.body)
+                            setNotifications((prev) => [newNotif, ...prev])
+                        } catch (err) {
+                            console.error("Failed to parse incoming WS notification:", err)
+                        }
+                    })
+                },
+                onStompError: (frame) => {
+                    console.warn("STOMP error:", frame.headers["message"])
+                }
+            })
+
+            stompClient.activate()
+        } catch (err) {
+            console.error("Error setting up WebSocket client:", err)
+        }
+
+        return () => {
+            if (stompClient) {
+                stompClient.deactivate()
+            }
+        }
     }, [userData?._id])
 
     useEffect(() => {
@@ -107,7 +144,7 @@ function NotificationBell() {
                         ) : (
                             notifications.map((n) => (
                                 <button
-                                    key={n._id}
+                                    key={n._id || n.id}
                                     onClick={() => handleNotificationClick(n)}
                                     className={`w-full p-4 text-left hover:bg-stone-50 transition-colors border-b border-stone-50 last:border-0 flex gap-3 relative ${!n.isRead ? "bg-amber-50/30" : ""}`}
                                 >
@@ -119,7 +156,7 @@ function NotificationBell() {
                                             {n.message}
                                         </p>
                                         <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">
-                                            {new Date(n.createdAt).toLocaleDateString()}
+                                            {n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "Just now"}
                                         </p>
                                     </div>
                                     {!n.isRead && (
