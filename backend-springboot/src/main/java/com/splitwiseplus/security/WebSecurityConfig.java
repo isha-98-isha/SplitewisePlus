@@ -54,6 +54,7 @@ public class WebSecurityConfig {
             .antMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
             .antMatchers("/api/users/login", "/api/users/register", "/api/users/forgot-password", "/api/users/reset-password").permitAll()
             .antMatchers("/api/expenses/**", "/api/groups/**", "/api/notifications/**", "/api/settlements/**", "/api/admin/**").permitAll()
+            .antMatchers("/ws/**").permitAll()
             .antMatchers("/api/test/**").permitAll()
             .anyRequest().authenticated();
 
