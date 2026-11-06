@@ -8,3 +8,4 @@ target/
 *.jar
 frontend/playwright-report/
 frontend/test-results/
+dev-start.ps1
